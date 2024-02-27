@@ -411,10 +411,10 @@ function RapidChangeSubroutines.Execute_ToolTouchOff()
   if units == k.INCHES then
     multipler = 0.03937
   end
-  maxDistance = seekRetreat + (1 * multipler)
+  local newMaxDistance = seekRetreat + (1 * multipler)
 
   -- didStrike = rcCntl.ProbeDown(maxDistance, setFeed)
-  rcCntl.ProbeDown(maxDistance, setFeed)
+  rcCntl.ProbeDown(newMaxDistance, setFeed)
   rcCntl.RapidToMachCoord_Z(zSafeClearance)
 
   didStrike = rcCntl.GetProbeStrikeStatus()
