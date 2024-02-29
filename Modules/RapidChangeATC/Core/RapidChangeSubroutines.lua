@@ -30,6 +30,7 @@ local zMoveToProbe = 0
 local zRetreat = 0
 local zSafeClearance = 0
 local zSpindleStart = 0
+local pocketMappingEnabled = 0
 
 --Tool Recognition Settings
 local toolRecEnabled = 0
@@ -73,7 +74,15 @@ local function convert(mmValue)
 end
 
 local function isToolInRange(tool)
-  if tool > 0 and tool <= pocketCount then
+  if tool > 0 and tool <= 99 then
+    return k.TRUE
+  else
+    return k.FALSE
+  end
+end
+
+local function isPocketInRange(pocket)
+  if pocket > 0 and pocket <= pocketCount then
     return k.TRUE
   else
     return k.FALSE
@@ -96,11 +105,28 @@ local function getPocket1Pos(axis)
   end
 end
 
+local function calculateAlignedPocketPosition(pocket)
+  local refPos = getPocket1Pos(alignment)
+  return refPos + (direction * pocketOffset * (pocket - 1))
+end
+--[[
 local function calculateAlignedPocketPosition(tool)
   local refPos = getPocket1Pos(alignment)
   return refPos + (direction * pocketOffset * (tool - 1))
 end
+]]
+local function getPocketPos(axis, pocket)
+  if isPocketInRange(pocket) == k.FALSE then
+    return getManualPos(axis)
+  end
 
+  if axis == alignment then
+    return calculateAlignedPocketPosition(pocket)
+  else
+    return getPocket1Pos(axis)
+  end
+end
+--[[
 local function getPocketPos(axis, tool)
   if isToolInRange(tool) == k.FALSE then
     return getManualPos(axis)
@@ -112,7 +138,8 @@ local function getPocketPos(axis, tool)
     return getPocket1Pos(axis)
   end
 end
-
+]]
+--[[
 local function getMachToolNumbers()
   currentTool = rcCntl.GetCurrentTool()
   selectedTool = rcCntl.GetSelectedTool()
@@ -121,6 +148,25 @@ local function getMachToolNumbers()
   yLoad = getPocketPos(k.Y_AXIS, selectedTool)
   xUnload = getPocketPos(k.X_AXIS, currentTool)
   yUnload = getPocketPos(k.Y_AXIS, currentTool)
+end
+]]
+local function getMachToolNumbers(pocketMappingEnabled)
+	currentTool = rcCntl.GetCurrentTool()
+	selectedTool = rcCntl.GetSelectedTool()
+
+	if pocketMappingEnabled then
+		local currentToolPocket = mc.mcToolGetData( inst, mc.MTOOL_MILL_POCKET, currentTool )
+		local selectedToolPocket = mc.mcToolGetData( inst, mc.MTOOL_MILL_POCKET, selectedTool )
+		xLoad = getPocketPos(k.X_AXIS, selectedToolPocket)
+		yLoad = getPocketPos(k.Y_AXIS, selectedToolPocket)
+		xUnload = getPocketPos(k.X_AXIS, currentToolPocket)
+		yUnload = getPocketPos(k.Y_AXIS, currentToolPocket)
+	else
+		xLoad = getPocketPos(k.X_AXIS, selectedTool)
+		yLoad = getPocketPos(k.Y_AXIS, selectedTool)
+		xUnload = getPocketPos(k.X_AXIS, currentTool)
+		yUnload = getPocketPos(k.Y_AXIS, currentTool)
+	end
 end
 
 -- local function getSettingValues()
@@ -218,6 +264,7 @@ function RapidChangeSubroutines.UpdateSettings()
   zRetreat = zEngage + convert(Z_RETREAT_OFFSET)
   zSafeClearance = rcSettings.GetValue(k.Z_SAFE_CLEARANCE)
   zSpindleStart = zEngage + convert(Z_SPINDLE_START_OFFSET)
+	pocketMappingEnabled = k.TRUE
 
   --Tool Recognition Settings
   toolRecEnabled = rcSettings.GetValue(k.TOOL_REC_ENABLED)
