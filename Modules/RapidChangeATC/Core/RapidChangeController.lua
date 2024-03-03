@@ -152,12 +152,11 @@ function RapidChangeController.CancelTLO()
 	executeLines(line(CANCEL_TLO))
 end
 
-function RapidChangeController.SetTLO(tool)
+function RapidChangeController.SetTLO(tool, zSetter)
 	local offset = getProbeMachPosZ()
 	local rc = mc.mcToolSetData(inst, mc.MTOOL_MILL_HEIGHT, tool, offset - zSetter) 
 	--Comment:  This allows us to use the tool to set work offsets with gauge blocks etc
 	rcErrors.GuardAPIError(rc)
-	mc.mcCntlSetLastError(inst, string.format("Tool length = %.3f", mc.mcToolGetData(inst,mc.MTOOL_MILL_HEIGHT, tool)))
 	
 	--TODO: Should we dwell here? Not sure how to handle this. Mach4 docs say the
 	--tool offset shouldn't be changed while gcode is running. Can we safely work around this?

@@ -29,8 +29,16 @@ RapidChangeConstants.ALIGNMENT_OPTIONS = {
 }
 
 RapidChangeConstants.DIRECTION_OPTIONS = {
-  { value = RapidChangeConstants.POSITIVE, label = "Positive" },
   { value = RapidChangeConstants.NEGATIVE, label = "Negative" },
+  { value = RapidChangeConstants.POSITIVE, label = "Positive" },
+}
+
+RapidChangeConstants.TOOL_DIAMETER_OFFSET_OPTIONS = {
+	{ value = RapidChangeConstants.DISABLED, label = "Disabled" },
+	{ value = RapidChangeConstants.X_AXIS_NEGATIVE, label = "X Axis Negative" },
+	{ value = RapidChangeConstants.X_AXIS_POSITIVE, label = "X Axis Positive" },
+	{ value = RapidChangeConstants.Y_AXIS_NEGATIVE, label = "Y Axis Negative" },
+	{ value = RapidChangeConstants.Y_AXIS_POSITIVE, label = "Y Axis Positive" },
 }
 
 RapidChangeConstants.COVER_AXIS_OPTIONS = {
@@ -95,8 +103,8 @@ RapidChangeConstants.INCHES = 20
 RapidChangeConstants.MILLIMETERS = 21
 
 -- Directions
+RapidChangeConstants.NEGATIVE = 0
 RapidChangeConstants.POSITIVE = 1
-RapidChangeConstants.NEGATIVE = -1
 
 --Axes
 RapidChangeConstants.X_AXIS = mc.X_AXIS
@@ -119,6 +127,12 @@ RapidChangeConstants.PROBE = 0
 RapidChangeConstants.PROBE_1 = 1
 RapidChangeConstants.PROBE_2 = 2
 RapidChangeConstants.PROBE_3 = 3
+
+--Tool DiameterOffset
+RapidChangeConstants.X_AXIS_NEGATIVE = 1
+RapidChangeConstants.X_AXIS_POSITIVE = 2
+RapidChangeConstants.Y_AXIS_NEGATIVE = 3
+RapidChangeConstants.Y_AXIS_POSITIVE = 4
 
 --Setting Keys
 --Tool change
@@ -152,6 +166,8 @@ RapidChangeConstants.SEEK_OVERSHOOT = "SeekOvershoot"
 RapidChangeConstants.SEEK_FEED_RATE = "SeekFeedRate"
 RapidChangeConstants.SEEK_RETREAT = "SeekRetreat"
 RapidChangeConstants.SET_FEED_RATE = "SetFeedRate"
+RapidChangeConstants.TOOL_DIAMETER_OFFSET = "ToolDiameterOffset"
+RapidChangeConstants.TOOL_SETTER_DIAMETER = "ToolSetterDiameter"
 
 --Tool recognition
 RapidChangeConstants.TOOL_REC_ENABLED = "ToolRecognitionEnabled"

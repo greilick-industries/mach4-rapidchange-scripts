@@ -30,6 +30,7 @@ local zMoveToProbe = 0
 local zRetreat = 0
 local zSafeClearance = 0
 local zSpindleStart = 0
+local pocketMappingEnabled = 1
 
 --Tool Recognition Settings
 local toolRecEnabled = 0
@@ -59,6 +60,8 @@ local seekOvershoot = 0
 local seekRetreat = 0
 local seekFeed = 0
 local setFeed = 0
+local toolDiameterOffset = 0
+local toolHeightSetterDiameter = 0
 
 --Mach Tool Numbers
 local currentTool = 0
@@ -72,13 +75,31 @@ local function convert(mmValue)
   end
 end
 
-local function isToolInRange(tool)
-  if tool > 0 and tool <= pocketCount then
+local function getPocket( tool )
+	local inst = mc.mcGetInstance()
+	return( mc.mcToolGetData( inst, mc.MTOOL_MILL_POCKET,tool ) )
+end
+
+local function isPocketInRange(pocket)
+  if pocket > 0 and pocket <= pocketCount then
     return k.TRUE
   else
     return k.FALSE
   end
 end
+
+local function isToolInRange(tool)
+  if tool > 0 and tool <= 99 then
+	if pocketMappingEnabled then
+		return isPocketInRange(getPocket(tool))
+	else
+		return k.TRUE
+	end
+  else
+    return k.FALSE
+  end
+end
+
 
 local function getManualPos(axis)
   if axis == k.X_AXIS then
@@ -87,6 +108,7 @@ local function getManualPos(axis)
     return yManual
   end
 end
+
 
 local function getPocket1Pos(axis)
   if axis == k.X_AXIS then
@@ -101,26 +123,35 @@ local function calculateAlignedPocketPosition(tool)
   return refPos + (direction * pocketOffset * (tool - 1))
 end
 
-local function getPocketPos(axis, tool)
-  if isToolInRange(tool) == k.FALSE then
+local function getPocketPos(axis, pocket)
+  if isPocketInRange(pocket) == k.FALSE then
     return getManualPos(axis)
   end
 
   if axis == alignment then
-    return calculateAlignedPocketPosition(tool)
+    return calculateAlignedPocketPosition(pocket)
   else
     return getPocket1Pos(axis)
   end
 end
 
 local function getMachToolNumbers()
-  currentTool = rcCntl.GetCurrentTool()
-  selectedTool = rcCntl.GetSelectedTool()
+	currentTool = rcCntl.GetCurrentTool()
+	selectedTool = rcCntl.GetSelectedTool()
 
-  xLoad = getPocketPos(k.X_AXIS, selectedTool)
-  yLoad = getPocketPos(k.Y_AXIS, selectedTool)
-  xUnload = getPocketPos(k.X_AXIS, currentTool)
-  yUnload = getPocketPos(k.Y_AXIS, currentTool)
+	if pocketMappingEnabled then
+		local currentToolPocket = getPocket( currentTool )
+		local selectedToolPocket = getPocket( selectedTool )
+		xLoad = getPocketPos(k.X_AXIS, selectedToolPocket)
+		yLoad = getPocketPos(k.Y_AXIS, selectedToolPocket)
+		xUnload = getPocketPos(k.X_AXIS, currentToolPocket)
+		yUnload = getPocketPos(k.Y_AXIS, currentToolPocket)
+	else
+		xLoad = getPocketPos(k.X_AXIS, selectedTool)
+		yLoad = getPocketPos(k.Y_AXIS, selectedTool)
+		xUnload = getPocketPos(k.X_AXIS, currentTool)
+		yUnload = getPocketPos(k.Y_AXIS, currentTool)
+	end
 end
 
 -- local function getSettingValues()
@@ -196,13 +227,19 @@ function RapidChangeSubroutines.Validate_HomeXYZ()
   end
 end
 
+local function butcherDirection(getValue)
+	if getValue == k.NEGATIVE then return -1 end
+	if getValue == k.POSITIVE then return 1 end
+	
+end
+
 function RapidChangeSubroutines.UpdateSettings()
   --Mach4 Settings
   units = rcCntl.GetDefaultUnits() / 10
 
   --Tool Change Settings
   alignment = rcSettings.GetValue(k.ALIGNMENT)
-  direction = rcSettings.GetValue(k.DIRECTION)
+  direction = butcherDirection(rcSettings.GetValue(k.DIRECTION))
   pocketCount = rcSettings.GetValue(k.POCKET_COUNT)
   pocketOffset = rcSettings.GetValue(k.POCKET_OFFSET)
   engageFeed = rcSettings.GetValue(k.ENGAGE_FEED_RATE)
@@ -218,6 +255,7 @@ function RapidChangeSubroutines.UpdateSettings()
   zRetreat = zEngage + convert(Z_RETREAT_OFFSET)
   zSafeClearance = rcSettings.GetValue(k.Z_SAFE_CLEARANCE)
   zSpindleStart = zEngage + convert(Z_SPINDLE_START_OFFSET)
+  pocketMappingEnabled = k.TRUE  
 
   --Tool Recognition Settings
   toolRecEnabled = rcSettings.GetValue(k.TOOL_REC_ENABLED)
@@ -247,7 +285,9 @@ function RapidChangeSubroutines.UpdateSettings()
   seekOvershoot = math.max(rcSettings.GetValue(k.SEEK_OVERSHOOT),(-1 * rcSettings.GetValue(k.SEEK_OVERSHOOT)))  
   seekRetreat = math.max(rcSettings.GetValue(k.SEEK_RETREAT),(-1 * rcSettings.GetValue(k.SEEK_RETREAT)))
   seekFeed = rcSettings.GetValue(k.SEEK_FEED_RATE)
-  setFeed = rcSettings.GetValue(k.SET_FEED_RATE)  
+  setFeed = rcSettings.GetValue(k.SET_FEED_RATE) 
+  toolDiameterOffset = rcSettings.GetValue(k.TOOL_DIAMETER_OFFSET)
+  toolHeightSetterDiameter = rcSettings.GetValue(k.TOOL_SETTER_DIAMETER)  
    
 end
 
@@ -288,6 +328,7 @@ function RapidChangeSubroutines.ConfirmLoad_User()
   rcCntl.RapidToMachCoord_Z(zMoveToProbe)
 
   local message = string.format("Confirm tool %i has properly loaded and press \"OK\" to resume ATC.", selectedTool)
+  if pocketMappingEnabled then message = string.format( "Confirm tool %i from pocket %i has properly loaded and press \"OK\" to resume ATC.", selectedTool, getPocket(selectedTool) )  end
   rcCntl.ShowBox(message)
 
   rcCntl.SetCurrentTool(selectedTool)
@@ -333,6 +374,7 @@ function RapidChangeSubroutines.ConfirmUnload_User()
   rcCntl.RapidToMachCoord_Z(zMoveToLoad)
 
   local message = string.format("Confirm tool %i has properly unloaded and press \"OK\" to resume ATC.", currentTool)
+  if pocketMappingEnabled then message = string.format( "Confirm tool %i from pocket %i has properly unloaded and press \"OK\" to resume ATC.", currentTool, getPocket(currentTool) ) end
   rcCntl.ShowBox(message)
 
   rcCntl.SetCurrentTool(0)
@@ -393,10 +435,37 @@ function RapidChangeSubroutines.Execute_ToolTouchOff()
 		rcCntl.RapidToMachCoord_Z(zSafeClearance)
     	return end
 	
+	local inst = mc.mcGetInstance()
 	local probeCode = 31  -- Comment: Massive shortcut until settings and verification are implemented
+	
+	local xOffset = 0
+	local yOffset = 0
+	local toolDiameter = 0
+	local toolDescription = ""
+	local toolLength = 0
+	
+	if (toolDiameterOffset == k.DISABLED) or (toolHeightSetterDiameter == 0) then
+		-- do nothing
+	else
+		toolRadius = mc.mcToolGetData(inst, mc.MTOOL_MILL_RAD, currentTool)  
+		if toolRadius >= ( toolHeightSetterDiameter / 2 ) then
+			if toolDiameterOffset == k.X_AXIS_NEGATIVE then
+				xOffset = -1 * toolRadius
+			elseif toolDiameterOffset == k.X_AXIS_POSITIVE then
+				xOffset = toolRadius
+			elseif toolDiameterOffset == k.Y_AXIS_NEGATIVE then
+				YOffset = -1 * toolRadius
+			elseif toolDiameterOffset == k.Y_AXIS_POSITIVE then
+				YOffset = toolRadius
+			else -- we have a problem
+			end
+		else
+			-- do nothing
+		end
+	end
 
 	-- move to probe xy position at zSeekStart plane
-	rcCntl.RapidToMachCoords_XY_Z(xSetter, ySetter, zSeekStart)
+	rcCntl.RapidToMachCoords_XY_Z(xSetter + xOffset, ySetter + yOffset, zSeekStart)
 	
 	--fast
 	-- confirm probe is free
@@ -425,6 +494,9 @@ function RapidChangeSubroutines.Execute_ToolTouchOff()
 	rc = rcCntl.CheckProbe(0, probeCode) 
 	if not rc then RapidChangeSubroutines.OnFailedProbeStatus(k.TRUE) return end
 	
+	toolDescription = mc.mcToolGetDesc(inst, currentTool)
+	toolLength = mc.mcToolGetData(inst, mc.MTOOL_MILL_HEIGHT, currentTool)
+	rcCntl.ShowStatus(string.format("Tool: %i %s length set to %.4f", currentTool, toolDescription, toolLength))
 	-- retract
 	rcCntl.RapidToMachCoord_Z(zSafeClearance)
 	
@@ -435,13 +507,13 @@ function RapidChangeSubroutines.Execute_ToolTouchOff()
 end
 
 function RapidChangeSubroutines.LoadTool()
-  if selectedTool == 0 then
-    RapidChangeSubroutines.LoadToolZero()
-  elseif isToolInRange(selectedTool) == k.TRUE then
-    RapidChangeSubroutines.LoadToolAuto()
-  else
-    RapidChangeSubroutines.LoadToolManual()
-  end
+	if selectedTool == 0 then
+		RapidChangeSubroutines.LoadToolZero()
+	elseif isToolInRange(selectedTool) == k.TRUE then
+		RapidChangeSubroutines.LoadToolAuto()
+	else
+		RapidChangeSubroutines.LoadToolManual()
+	end
 end
 
 function RapidChangeSubroutines.LoadToolAuto()
@@ -527,7 +599,7 @@ function RapidChangeSubroutines.Teardown_m6()
   rcCntl.SetCurrentTool(currentTool)
 
   if touchOffEnabled == k.ENABLED then
-    rcCntl.SetTLO(currentTool)
+    rcCntl.SetTLO(currentTool, zSetter)
     rcCntl.ActivateTLO(currentTool)
   end
 end
@@ -538,7 +610,7 @@ function RapidChangeSubroutines.Teardown_ToolTouchOff()
   end
 
   rcCntl.RestoreState()
-  rcCntl.SetTLO(currentTool)
+  rcCntl.SetTLO(currentTool, zSetter)
   rcCntl.ActivateTLO(currentTool)
 end
 

@@ -6,6 +6,9 @@
 
 !Modules/RapidChangeATC/*
 !Modules/RapidChangeATC/Core/*
-!Profiles/RapidChangeATC/*
-!Profiles/RapidChangeATC/Macros/*
+!Profiles/RapidChangeATC/Macros/load_RapidChangeATC.mcs
+!Profiles/RapidChangeATC/Macros/m6.mcs
+!Profiles/RapidChangeATC/Macros/m108.mcs
+!Profiles/RapidChangeATC/Macros/m109.mcs
+!Profiles/RapidChangeATC/Macros/m131.mcs
 !Wizards/RapidChange*.mcs

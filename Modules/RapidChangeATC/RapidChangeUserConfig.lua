@@ -112,6 +112,13 @@ function RapidChangeUserConfig.Load()
 
   -- Feedrate for any subsequent(set) probe.
   rcSettings.SetValue(k.SET_FEED_RATE, 0.000)
+  
+  -- Tool diameter offset calculation
+  -- Options: (DISABLED, X_AXIS_NEGATIVE, X_AXIS_POSITIVE, Y_AXIS_NEGATIVE, Y_AXIS_POSITIVE, )  
+  rcSettings.SetValue(k.TOOL_DIAMETER_OFFSET, k.DISABLED)
+  
+  -- Tool height setter diameter  
+  rcSettings.SetValue(k.TOOL_SETTER_DIAMETER, 0.000)  
 
   -- Tool Recognition Settings
 

@@ -46,8 +46,9 @@ rcSignals = require "RapidChangeSignals"
 
 package.loaded.RapidChangeSubroutines = nil
 rcSub = require "RapidChangeSubroutines"
+rcSub.UpdateSettings()
 
 --RapidChangeATC user config file
 package.loaded.RapidChangeUserConfig = nil
 rcConfig = require "RapidChangeUserConfig"
-rcConfig.Load()
+--rcConfig.Load()

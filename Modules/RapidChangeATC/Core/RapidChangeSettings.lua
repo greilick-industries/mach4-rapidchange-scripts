@@ -63,6 +63,8 @@ local definitions = {
   createDefinition(k.SEEK_FEED_RATE, "Seek Feed Rate", "Feedrate for the initial(seek) probe.", k.FEED_SETTING),
   createDefinition(k.SEEK_RETREAT, "Seek Retreat", "Distance to retreat after trigger, before a subsequent(set) probe.", k.UDISTANCE_SETTING),
   createDefinition(k.SET_FEED_RATE, "Set Feed Rate", "Feedrate for any subsequent(seek) probe.", k.FEED_SETTING),
+  createOptionDefinition(k.TOOL_DIAMETER_OFFSET, "Tool Diameter Offset", "Offset calculation to allow for tool diameters larger than tool height setter diameter.", k.TOOL_DIAMETER_OFFSET_OPTIONS),
+createDefinition(k.TOOL_SETTER_DIAMETER, "Tool Setter Diameter", "Diameter of tool height setter.", k.DISTANCE_SETTING),  
 
   --Tool Recognition
   createDefinition(k.TOOL_REC_ENABLED, "Tool Recognition Enabled", "Enable infrared tool recognition.", k.SWITCH_SETTING),
@@ -147,23 +149,43 @@ end
 
 local definitionMap = buildDefinitionMap()
 
+function RapidChangeSettings.GetRequiredDataType( settingType)
+	
+	local ValueType = {
+		[k.DISTANCE_SETTING] 	= function ( ) return "float" end,
+		[k.UDISTANCE_SETTING] 	= function ( ) return "float" end,
+		[k.FEED_SETTING] 		= function ( ) return "float" end,
+		[k.RPM_SETTING] 		= function ( ) return "float" end,
+		[k.MCODE_SETTING] 		= function ( ) return "integer" end,
+		[k.OPTION_SETTING] 		= function ( ) return "integer" end,
+		[k.SWITCH_SETTING] 		= function ( ) return "integer" end,
+		[k.COUNT_SETTING] 		= function ( ) return "integer" end,
+		-- [k.PORT_SETTING] 	= function ( ) return "integer" end,
+		-- [k.PIN_SETTING] 		= function ( ) return "integer" end,
+		[k.DWELL_SETTING] 		= function ( ) return "float" end,
+	}	
+	
+	return ValueType [ settingType ] ( )
+	
+end
 --Retrieve a setting's value
 function RapidChangeSettings.GetValue(key)
-  local definition = definitionMap[key]
+	
+	local definition = definitionMap[key]
 
-  if definition.settingType == k.DISTANCE_SETTING or
-    definition.settingType == k.UDISTANCE_SETTING or
-    definition.settingType == k.FEED_SETTING or
-    definition.settingType == k.RPM_SETTING or
-    definition.settingType == k.DWELL_SETTING
-  then
-    return mc.mcProfileGetDouble(inst, RC_SECTION, definition.key, definition.defaultValue)
-  else
-    return mc.mcProfileGetInt(inst, RC_SECTION, definition.key, definition.defaultValue)
-  end
+	if RapidChangeSettings.GetRequiredDataType( definition.settingType) == "float" then
+		return mc.mcProfileGetDouble(inst, RC_SECTION, definition.key, definition.defaultValue)
+	elseif RapidChangeSettings.GetRequiredDataType( definition.settingType) == "integer" then
+		return mc.mcProfileGetInt(inst, RC_SECTION, definition.key, definition.defaultValue)
+	elseif RapidChangeSettings.GetRequiredDataType( definition.settingType) == "string" then
+		return mc.mcProfileGetString(inst, RC_SECTION, definition.key, definition.defaultValue)
+	end
+	
 end
 
+
 function RapidChangeSettings.GetCurrentSettings()
+  
   local settings = {}
 
   for _, value in ipairs(definitions) do
@@ -171,10 +193,12 @@ function RapidChangeSettings.GetCurrentSettings()
   end
 
   return settings
+  
 end
 
 --Get an iterable list of settings for UI controls
 function RapidChangeSettings.GetUISettingsList()
+  
   local settings = {}
 
   for i, v in ipairs(definitions) do
@@ -182,80 +206,22 @@ function RapidChangeSettings.GetUISettingsList()
   end
 
   return settings
-end
-
---UIControl Registration
---Register the UI control upon construction, unregister upon destruction.
---This will allow for the handling of apapting control values to stored values to be handled by RapidChangeSettings.
---The UI can fetch the settings list and create whichever appropriate controls it chooses and let the
---settings worry about what to do with them. Indicate the control type used for the setting from the defined
---control type constants when registering a control.
-local registeredControls = {}
-
-function RapidChangeSettings.RegisterUIControl(key, control, controlType)
-	
-	table.insert(registeredControls, { key = key, control = control, controlType = controlType })
-
-end
-
-function RapidChangeSettings.UnregisterUIControls()
-	
-	for _, v in ipairs(registeredControls) do
-		v.control = nil
-	end
-	
-	collectgarbage()
-end
-
-local ControlValueLib = {
-	
-	[k.INPUT_CONTROL] 	= function (control) return control:GetValue() end,
-	[k.CHECK_CONTROL] 	= function (control) if control:IsChecked() then return 1 else return 0 end end,
-	[k.RADIO_CONTROL] 	= function (control) return control:GetInt() end,
-	[k.SELECT_CONTROL] 	= function (control) return control:GetSelection() end,
-	[k.LISTBOX_CONTROL]	= function (control) return control:GetSelection() end,
-	[k.CHOICE_CONTROL] 	= function (control) return control:GetSelection() end,
-	[k.SPIN_CONTROL] 	= function (control) return control:GetValue() end
-
-}
-
-local function GetControlValue(control, controlType)
-	
-	return ControlValueLib[controlType] (control)
-	
-end
-
---Call from UI to save user input
---Settings will handle reading the input control and updating stored values
-function RapidChangeSettings.SaveUISettings()
-	
-	for _, v in ipairs(registeredControls) do
-		
-		local key = v.key
-		local cntrl = v.control
-		local cntrlType = v.controlType
-		local value = GetControlValue(cntrl, cntrlType)
-		RapidChangeSettings.SetValue(key, value)
-	end
-	
-	mc.mcProfileFlush(inst)
-	
+  
 end
 
 function RapidChangeSettings.SetValue(key, value)
   
-  local definition = definitionMap[key]
+	local definition = definitionMap[key]
 
-  if definition.settingType == k.DISTANCE_SETTING or
-		definition.settingType == k.UDISTANCE_SETTING or
-		definition.settingType == k.FEED_SETTING or
-		definition.settingType == k.RPM_SETTING or
-		definition.settingType == k.DWELL_SETTING
-  then
-		mc.mcProfileWriteDouble(inst, RC_SECTION, definition.key, tonumber(value))
-  else
-		mc.mcProfileWriteInt(inst, RC_SECTION, definition.key, math.tointeger(value))
-  end
+	if RapidChangeSettings.GetRequiredDataType( definition.settingType) == "float" then
+		return mc.mcProfileWriteDouble(inst, RC_SECTION, definition.key, value)
+		
+	elseif RapidChangeSettings.GetRequiredDataType( definition.settingType) == "integer" then
+		return mc.mcProfileWriteInt(inst, RC_SECTION, definition.key, value)
+		
+	elseif RapidChangeSettings.GetRequiredDataType( definition.settingType) == "string" then
+		return mc.mcProfileWriteString(inst, RC_SECTION, definition.key, value)
+	end
   
 end
 
