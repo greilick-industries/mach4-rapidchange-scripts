@@ -51,6 +51,8 @@ local definitions = {
   --TODO: Add Probe input selection for tool setter?
   createDefinition(k.TOUCH_OFF_ENABLED, "Tool Touch Off Enabled", "Calls the configured Tool Touch Off M-Code after loading a tool.", k.SWITCH_SETTING),
   createDefinition(k.TOOL_SETTER_INTERNAL, "Tool Setter Internal", "When enabled the dust cover will open for independent tool touch offs.", k.SWITCH_SETTING),
+  createDefinition(k.USE_MASTER_TOOL, "Use Master Tool", "When enabled, the chosen master tool will be treated as a master tool.", k.SWITCH_SETTING),
+  createDefinition(k.MASTER_TOOL, "Master Tool", "The tool number of the master tool employed when \"Use Master Tool\" mode is enabled.", k.COUNT_SETTING),
   createDefinition(k.X_TOOL_SETTER, "X Tool Setter", "X Position (Machine Coordinates) of the center of the tool setter.", k.DISTANCE_SETTING),
   createDefinition(k.Y_TOOL_SETTER, "Y Tool Setter", "Y Position (Machine Coordinates) of the center of the tool setter.", k.DISTANCE_SETTING),
   createDefinition(k.Z_SEEK_START, "Z Seek Start", "Z Position (Machine Coordinates) to begin the initial(seek) probe.", k.DISTANCE_SETTING),
@@ -58,6 +60,9 @@ local definitions = {
   createDefinition(k.SEEK_FEED_RATE, "Seek Feed Rate", "Feedrate for the initial(seek) probe.", k.FEED_SETTING),
   createDefinition(k.SEEK_RETREAT, "Seek Retreat", "Distance to retreat after trigger, before a subsequent(set) probe.", k.UDISTANCE_SETTING),
   createDefinition(k.SET_FEED_RATE, "Set Feed Rate", "Feedrate for any subsequent(seek) probe.", k.FEED_SETTING),
+
+  --Internal use only
+  createDefinition(k.MASTER_TOOL_REF_POS, "Master Tool Ref Pos", "Last triggered machine pos when probing the master tool.", k.INTERNAL_SETTING),
 
   --Tool Recognition
   createDefinition(k.TOOL_REC_ENABLED, "Tool Recognition Enabled", "Enable infrared tool recognition.", k.SWITCH_SETTING),

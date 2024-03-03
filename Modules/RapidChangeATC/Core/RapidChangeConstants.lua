@@ -12,6 +12,7 @@ RapidChangeConstants.COUNT_SETTING = 7
 -- RapidChangeConstants.PORT_SETTING = 8
 -- RapidChangeConstants.PIN_SETTING = 9
 RapidChangeConstants.DWELL_SETTING = 10
+RapidChangeConstants.INTERNAL_SETTING = 11
 
 --UI Control Types
 RapidChangeConstants.INPUT_CONTROL = 0
@@ -142,6 +143,8 @@ RapidChangeConstants.ENGAGE_FEED_RATE = "EngageFeedRate"
 --Touch off
 RapidChangeConstants.TOUCH_OFF_ENABLED = "TouchOffEnabled"
 RapidChangeConstants.TOOL_SETTER_INTERNAL = "ToolSetterInternal"
+RapidChangeConstants.USE_MASTER_TOOL = "UseMasterTool"
+RapidChangeConstants.MASTER_TOOL = "MasterTool"
 --RapidChangeConstants.TOUCH_OFF_M_CODE = "TouchOffMCode"
 RapidChangeConstants.X_TOOL_SETTER = "XToolSetter"
 RapidChangeConstants.Y_TOOL_SETTER = "YToolSetter"
@@ -150,6 +153,9 @@ RapidChangeConstants.SEEK_MAX_DISTANCE = "SeekMaxDistance"
 RapidChangeConstants.SEEK_FEED_RATE = "SeekFeedRate"
 RapidChangeConstants.SEEK_RETREAT = "SeekRetreat"
 RapidChangeConstants.SET_FEED_RATE = "SetFeedRate"
+
+--Internal Reference
+RapidChangeConstants.MASTER_TOOL_REF_POS = "MasterToolRefPos"
 
 --Tool recognition
 RapidChangeConstants.TOOL_REC_ENABLED = "ToolRecognitionEnabled"

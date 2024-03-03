@@ -115,7 +115,6 @@ local function getAxisPos(axis, useMach)
 	end
 
 	rcErrors.GuardAPIError(rc)
-	mc.mcCntlSetLastError(inst, string.format("mcAxisGetPos = %.3f", pos))
 	return pos
 end
 
@@ -151,12 +150,22 @@ function RapidChangeController.CancelTLO()
 	executeLines(line(CANCEL_TLO))
 end
 
-function RapidChangeController.SetTLO(tool)
-	local offset = getProbeMachPosZ()
+function RapidChangeController.SetTLO(tool, masterTool, refPos, refUpdater)
+	local offset = 0 -- master tool offset
+	local triggerPos = getProbeMachPosZ()
+
+	if masterTool == nil or refPos == nil then -- not in master tool mode, offset is Z machine pos
+		offset = triggerPos
+	elseif tool ~= masterTool then -- master tool mode, but we don't have the master tool so calculate the offset
+		offset = refPos - triggerPos
+	else -- we have the master tool in master tool mode, the offset is 0
+		-- we need to update the internal reference
+		rcSettings.SetValue(k.MASTER_TOOL_REF_POS, triggerPos)
+	end
+
+	-- Record the appropriate offset in the tool table
 	local rc = mc.mcToolSetData(inst, mc.MTOOL_MILL_HEIGHT, tool, offset)
 	rcErrors.GuardAPIError(rc)
-	--TODO: Should we dwell here? Not sure how to handle this. Mach4 docs say the
-	--tool offset shouldn't be changed while gcode is running. Can we safely work around this?
 end
 
 function RapidChangeController.CoolantStop()

@@ -88,6 +88,15 @@ function RapidChangeUserConfig.Load()
   -- Options: (TRUE, FALSE)
   rcSettings.SetValue(k.TOOL_SETTER_INTERNAL, k.TRUE)
 
+  -- When enabled, the chosen MASTER_TOOL will be treated as the master tool.
+  -- Touch offs with the MASTER_TOOL will record the trigger position for a 0
+  -- reference from which all other tool offsets will be calculated.
+  -- Options: (DISABLED, ENABLED)
+  rcSettings.SetValue(k.USE_MASTER_TOOL, k.DISABLED)
+
+  -- The tool number of the chosen master tool for USE_MASTER_TOOL mode.
+  rcSettings.SetValue(k.MASTER_TOOL, 1)
+
   -- X Position (Machine Coordinates) of the center of the tool setter.
   rcSettings.SetValue(k.X_TOOL_SETTER, 0.000)
 
