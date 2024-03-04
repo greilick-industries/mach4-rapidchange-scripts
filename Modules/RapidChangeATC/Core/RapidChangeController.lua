@@ -150,7 +150,7 @@ function RapidChangeController.CancelTLO()
 	executeLines(line(CANCEL_TLO))
 end
 
-function RapidChangeController.SetTLO(tool, masterTool, refPos, refUpdater)
+function RapidChangeController.SetTLO(tool, masterTool, refPos)
 	local offset = 0 -- master tool offset
 	local triggerPos = getProbeMachPosZ()
 

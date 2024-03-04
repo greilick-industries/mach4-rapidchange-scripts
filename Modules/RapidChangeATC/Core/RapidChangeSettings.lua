@@ -155,7 +155,8 @@ function RapidChangeSettings.GetValue(key)
     definition.settingType == k.UDISTANCE_SETTING or
     definition.settingType == k.FEED_SETTING or
     definition.settingType == k.RPM_SETTING or
-    definition.settingType == k.DWELL_SETTING
+    definition.settingType == k.DWELL_SETTING or
+    definition.settingType == k.INTERNAL_SETTING
   then
     return mc.mcProfileGetDouble(inst, RC_SECTION, definition.key, definition.defaultValue)
   else
@@ -218,7 +219,8 @@ function RapidChangeSettings.SetValue(key, value)
     definition.settingType == k.UDISTANCE_SETTING or
     definition.settingType == k.FEED_SETTING or
     definition.settingType == k.RPM_SETTING or
-    definition.settingType == k.DWELL_SETTING
+    definition.settingType == k.DWELL_SETTING or
+    definition.settingType == k.INTERNAL_SETTING
   then
     return mc.mcProfileWriteDouble(inst, RC_SECTION, definition.key, value)
   else
