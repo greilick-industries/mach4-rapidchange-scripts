@@ -461,7 +461,14 @@ function RapidChangeSubroutines.Teardown_m6()
   rcCntl.SetCurrentTool(currentTool)
 
   if touchOffEnabled == k.ENABLED then
-    rcCntl.SetTLO(currentTool)
+    local nilableMasterTool = nil
+    local nilableRefPos = nil
+
+    if useMasterTool == k.ENABLED then
+      nilableMasterTool = masterTool
+      nilableRefPos = rcSettings.GetValue(k.MASTER_TOOL_REF_POS)
+    end
+    rcCntl.SetTLO(currentTool, nilableMasterTool, nilableRefPos)
     rcCntl.ActivateTLO(currentTool)
   end
 end
