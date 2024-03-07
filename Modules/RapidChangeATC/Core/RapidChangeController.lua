@@ -152,10 +152,28 @@ function RapidChangeController.CancelTLO()
 	executeLines(line(CANCEL_TLO))
 end
 
+<<<<<<< Updated upstream
 function RapidChangeController.SetTLO(tool)
 	local offset = getProbeMachPosZ()
 	local rc = mc.mcToolSetData(inst, mc.MTOOL_MILL_HEIGHT, tool, offset - zSetter) 
 	--Comment:  This allows us to use the tool to set work offsets with gauge blocks etc
+=======
+function RapidChangeController.SetTLO(tool, masterTool, refPos)
+	local offset = 0 -- master tool offset
+	local triggerPos = getProbeMachPosZ()
+
+	if masterTool == nil or refPos == nil then -- not in master tool mode, offset is Z machine pos
+		offset = triggerPos
+	elseif tool ~= masterTool then -- master tool mode, but we don't have the master tool so calculate the offset
+		offset = triggerPos - refPos
+	else -- we have the master tool in master tool mode, the offset is 0
+		-- we need to update the internal reference
+		rcSettings.SetValue(k.MASTER_TOOL_REF_POS, triggerPos)
+	end
+
+	-- Record the appropriate offset in the tool table
+	local rc = mc.mcToolSetData(inst, mc.MTOOL_MILL_HEIGHT, tool, offset)
+>>>>>>> Stashed changes
 	rcErrors.GuardAPIError(rc)
 	mc.mcCntlSetLastError(inst, string.format("Tool length = %.3f", mc.mcToolGetData(inst,mc.MTOOL_MILL_HEIGHT, tool)))
 	
