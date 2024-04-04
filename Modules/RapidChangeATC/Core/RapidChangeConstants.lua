@@ -122,6 +122,13 @@ RapidChangeConstants.PROBE_1 = 1
 RapidChangeConstants.PROBE_2 = 2
 RapidChangeConstants.PROBE_3 = 3
 
+--Setting Sections
+RapidChangeConstants.SECTION_ATC = 0
+RapidChangeConstants.SECTION_TOOL_MEASURE = 1
+RapidChangeConstants.SECTION_TOOL_RECOGNITION = 2
+RapidChangeConstants.SECTION_COVER = 3
+RapidChangeConstants.SECTION_INTERNAL = 4
+
 --Setting Keys
 --Tool change
 RapidChangeConstants.UNITS = "Units"
