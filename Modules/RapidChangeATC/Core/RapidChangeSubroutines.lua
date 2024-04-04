@@ -536,7 +536,9 @@ function RapidChangeSubroutines.Validate_m6()
   if currentTool == selectedTool then
     local message = string.format("Tool %i loaded. Tool change bypassed.", selectedTool)
     rcCntl.Terminate(message)
+    return 0
   end
+  return 1
 end
 
 function RapidChangeSubroutines.Validate_ToolTouchOff()
