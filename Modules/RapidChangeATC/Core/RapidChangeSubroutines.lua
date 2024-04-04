@@ -141,13 +141,20 @@ function RapidChangeSubroutines.Validate_HomeXYZ()
   end
 end
 
+local function butcherDirection(getValue)
+	if getValue == k.NEGATIVE then return -1 end
+	if getValue == k.POSITIVE then return 1 end
+	
+end
+
+
 function RapidChangeSubroutines.UpdateSettings()
   --Mach4 Settings
   units = rcCntl.GetDefaultUnits() / 10
 
   --Tool Change Settings
   alignment = rcSettings.GetValue(k.ALIGNMENT)
-  direction = rcSettings.GetValue(k.DIRECTION)
+  direction = butcherDirection(rcSettings.GetValue(k.DIRECTION))
   pocketCount = rcSettings.GetValue(k.POCKET_COUNT)
   pocketOffset = rcSettings.GetValue(k.POCKET_OFFSET)
   engageFeed = rcSettings.GetValue(k.ENGAGE_FEED_RATE)

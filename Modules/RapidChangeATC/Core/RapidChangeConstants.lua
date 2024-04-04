@@ -97,8 +97,8 @@ RapidChangeConstants.INCHES = 20
 RapidChangeConstants.MILLIMETERS = 21
 
 -- Directions
-RapidChangeConstants.POSITIVE = 1
-RapidChangeConstants.NEGATIVE = -1
+RapidChangeConstants.POSITIVE = 0
+RapidChangeConstants.NEGATIVE = 1
 
 --Axes
 RapidChangeConstants.X_AXIS = mc.X_AXIS
