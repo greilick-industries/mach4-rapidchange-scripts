@@ -1,44 +1,29 @@
---Add this file to your Profile\Macros folder to load modules making the contents of the modules available to macros (M codes)
+---------------------------------------------------------------
+-- Load RapidChange ATC modules
+---------------------------------------------------------------
+
 local inst = mc.mcGetInstance()
 local profile = mc.mcProfileGetName(inst)
 local machDir = mc.mcCntlGetMachDir(inst)
-local paths = machDir .. "/Profiles/" .. profile .. "/Modules/?.lua" --Default location to look for modules with lua extensions
-local cpaths = machDir .. "/Profiles/" .. profile .. "/Modules/?.dll" --Default location to look for modules with dll extensions
 
---Add additional paths locations to look in here
-paths = paths .. ";" .. machDir .. "/Profiles/" .. profile .. "/Modules/?.mcs" --Lets also look here for modules with mcs extensions
-paths = paths .. ";" .. machDir .. "/Modules/?.lua" --Lets add a location to look for modules with lua extensions
-paths = paths .. ";" .. machDir .. "/Modules/?.mcs" --Lets add a location to look for modules with mcs extensions
-paths = paths .. ";" .. machDir .. "/Modules/?.mcc" --Lets add a location to look for modules with mcs extensions
-paths = paths .. ";" .. machDir .. "/Modules/RapidChangeATC/?.lua" --Added to look for modules in RapidChangeATC
-paths = paths .. ";" .. machDir .. "/Modules/RapidChangeATC/?.mcs" --Added to look for modules in RapidChangeATC
-paths = paths .. ";" .. machDir .. "/Modules/RapidChangeATC/?.mcc" --Added to look for modules in RapidChangeATC
-paths = paths .. ";" .. machDir .. "/Modules/RapidChangeATC/Core/?.lua" --Added to look for modules in RapidChangeATC
-paths = paths .. ";" .. machDir .. "/Modules/RapidChangeATC/Core/?.mcs" --Added to look for modules in RapidChangeATC
-paths = paths .. ";" .. machDir .. "/Modules/RapidChangeATC/Core/?.mcc" --Added to look for modules in RapidChangeATC
+pathSuffixTable = {
+	"lua","luac","mcs","mcc"
+}
+	
+local paths = ""
+-- RapidChange ATC  modules
+for k, suffix in pairs(pathSuffixTable) do
+	
+	paths = paths .. ";" ..  machDir .. "\\Modules\\RapidChangeATC\\?." .. suffix
+	paths = paths .. ";" ..  machDir .. "\\Modules\\RapidChangeATC\\Core\\?." .. suffix
+	paths = paths .. ";" ..  machDir .. "\\Profiles\\" .. profile .. "\\Modules\\RapidChangeATC\\?." .. suffix
 
---Check package.path to see if we need to add a ;
-local MyS = package.path
-local s = string.find(MyS, "%;") --Find the first ;
-
-if (s ~=1) then --package.path does not begin with a ;
-	paths = paths .. ";" --Add a ;
 end
 
-package.path = paths .. package.path --Do this only after you have built the string including all locations to look in
+-- remove first ';'
+paths = string.sub(paths,2)
 
---Add additional cpaths locations to look in here
-cpaths = cpaths ..  ";" .. machDir .. "/Modules/?.dll" --Lets add a location to look for modules with dll extensions
-
---Check package.cpath to see if we need to add a ;
-MyS = package.cpath
-s = string.find(MyS, "%;") --Find the first ;
-
-if (s ~=1) then --package.path does not begin with a ;
-	cpaths = cpaths .. ";" --Add a ;
-end
-
-package.cpath = cpaths .. package.cpath --Do this only after you have built the string including all locations to look in
+package.path = paths
 
 --RapidChangeATC Modules
 package.loaded.RapidChangeConstants = nil
@@ -61,16 +46,9 @@ rcSignals = require "RapidChangeSignals"
 
 package.loaded.RapidChangeSubroutines = nil
 rcSub = require "RapidChangeSubroutines"
+rcSub.UpdateSettings()
 
 --RapidChangeATC user config file
-package.loaded.RapidChangeUserConfig = nil
-rcConfig = require "RapidChangeUserConfig"
-rcConfig.Load()
-
-
-
-
-
-
-
-
+-- package.loaded.RapidChangeUserConfig = nil
+-- rcConfig = require "RapidChangeUserConfig"
+--rcConfig.Load()
