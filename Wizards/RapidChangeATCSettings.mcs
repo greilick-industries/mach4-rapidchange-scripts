@@ -338,8 +338,11 @@ function main( )
 	settings = rcSettings.GetUISettingsList( )
 	
 	for i=1, #settings do
-		
-		local setting = settings[i] 
+		local setting = settings[i]
+
+		if (setting.settingType == k.INTERNAL_SETTING) then
+			goto continue
+		end
 		 
 		local id = GetNextID( )
 		
@@ -349,6 +352,7 @@ function main( )
 		
 		sizer:Add( s, 0, wx.wxCENTER, 5 )
 		
+	    ::continue::
 	end
 	
 	panel:SetSizer( sizer )

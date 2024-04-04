@@ -21,6 +21,7 @@ RapidChangeConstants.RADIO_CONTROL = 2
 RapidChangeConstants.SELECT_CONTROL = 3
 RapidChangeConstants.LISTBOX_CONTROL = 4
 RapidChangeConstants.CHOICE_CONTROL = 5
+RapidChangeConstants.SPIN_CONTROL = 6
 
 
 -- Options
