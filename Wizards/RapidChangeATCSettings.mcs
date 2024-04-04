@@ -333,7 +333,7 @@ function main( )
 	panel = wx.wxScrolledWindow( frame, wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxHSCROLL + wx.wxVSCROLL )
 	panel:SetScrollRate( 5, 5 )
 	
-	sizer = wx.wxBoxSizer( wx.wxVERTICAL )
+	mainSizer = wx.wxBoxSizer( wx.wxVERTICAL )
 	
 	settings = rcSettings.GetUISettingsList( )
 	
@@ -350,15 +350,15 @@ function main( )
 		
 		CreateUISetting( id, setting )
 		
-		sizer:Add( s, 0, wx.wxCENTER, 5 )
+		mainSizer:Add( s, 0, wx.wxCENTER, 5 )
 		
 	    ::continue::
 	end
 	
-	panel:SetSizer( sizer )
+	panel:SetSizer( mainSizer )
 	panel:Layout( )
 	
-	sizer:Fit( panel )
+	mainSizer:Fit( panel )
 	
 	frame:SetMinSize( wx.wxSize( 300, 750 ) )
 	frame:Show( )
