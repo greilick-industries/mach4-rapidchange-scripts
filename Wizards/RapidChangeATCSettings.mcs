@@ -160,16 +160,35 @@ end
 
 function CreateTwoColumnInput( txt, cntrl )
 	
-	local s = wx.wxGridSizer( 0, 2, 5, 5 )
+	local s = wx.wxGridSizer( 1, 2, 5, 5 )
 	local t = wx.wxStaticText( panel, wx.wxID_ANY, tostring( txt ) )
 	
-	s:Add( t, 1, wx.wxCENTER, 5 )
-	s:Add( cntrl, 1, wx.wxCENTER, 5 )
+	s:Add( t, 1, wx.wxALIGN_LEFT | wx.wxALIGN_CENTER_VERTICAL, 5 )
+	s:Add( cntrl, 1, wx.wxRIGHT | wx.wxALIGN_CENTER_VERTICAL, 5 )
 	
-	s:SetMinSize( 250, 30 ) -- force it to be some reasonable size
+	s:SetMinSize( 300, 30 ) -- force it to be some reasonable size
 	
 	return s
 	
+end
+
+function CreateSectionSizer( title )
+	local sectionSizer = wx.wxBoxSizer( wx.wxVERTICAL )
+	sectionSizer:Add(wx.wxStaticText( panel, wx.wxID_ANY, title, wx.wxDefaultPosition ))
+	sectionSizer:Add(wx.wxStaticLine( panel, wx.wxID_ANY, wx.wxDefaultPosition, wx.wxSize(276, 2) ))
+	sectionSizer:AddSpacer(5)
+	return sectionSizer
+end
+
+function CreateSectionSizers()
+	local sizers = {
+		[k.SECTION_ATC] = CreateSectionSizer("ATC Settings"),
+		[k.SECTION_TOOL_MEASURE] = CreateSectionSizer("Tool Measurement Settings"),
+		[k.SECTION_TOOL_RECOGNITION] = CreateSectionSizer("Tool Recognition Settings"),
+		[k.SECTION_COVER] = CreateSectionSizer("Dust Cover Settings")
+	}
+
+	return sizers
 end
 
 AddUIControlandSizer = {
@@ -188,10 +207,10 @@ AddUIControlandSizer = {
 		end, 
 		[k.CHECK_CONTROL] = function( id, setting )
 			
-			local iCtrl = wx.wxCheckBox( panel, id, setting.label, wx.wxDefaultPosition, wx.wxDefaultSize )
+			local iCtrl = wx.wxCheckBox( panel, id, "", wx.wxDefaultPosition, wx.wxDefaultSize )
 			iCtrl:SetValue( setting.value )
 			
-			local iSizer = CreateOneColumnInput( setting.label, iCtrl )
+			local iSizer = CreateTwoColumnInput( setting.label, iCtrl )
 			
 			panel:Connect( id, wx.wxEVT_COMMAND_CHECKBOX_CLICKED, 
 				function( event ) OnUpdateUISetting( event:GetId( ), iCtrl:GetValue( ) ) end )
@@ -248,6 +267,9 @@ AddUIControlandSizer = {
 			local iSizer = CreateTwoColumnInput( setting.label, iCtrl ) 
 			
 			panel:Connect( id, wx.wxEVT_COMMAND_SPINCTRL_UPDATED, 
+				function( event ) OnUpdateUISetting( event:GetId( ), iCtrl:GetValue( ) ) end )
+
+				panel:Connect( id, wx.wxEVT_COMMAND_TEXT_UPDATED, 
 				function( event ) OnUpdateUISetting( event:GetId( ), iCtrl:GetValue( ) ) end )
 			
 			return iSizer
@@ -333,7 +355,23 @@ function main( )
 	panel = wx.wxScrolledWindow( frame, wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxHSCROLL + wx.wxVSCROLL )
 	panel:SetScrollRate( 5, 5 )
 	
-	mainSizer = wx.wxBoxSizer( wx.wxVERTICAL )
+	mainSizer = wx.wxBoxSizer( wx.wxHORIZONTAL )
+	columnOneSizer = wx.wxBoxSizer( wx.wxVERTICAL )
+	columnTwoSizer = wx.wxBoxSizer( wx.wxVERTICAL )
+	columnThreeSizer = wx.wxBoxSizer( wx.wxVERTICAL )
+	sectionSizers = CreateSectionSizers( )
+	
+	mainSizer:AddSpacer(20)
+	mainSizer:Add( columnOneSizer, 0, wx.wxLEFT, 5 )
+	mainSizer:Add( columnTwoSizer, 0, wx.wxLEFT, 5 )
+	mainSizer:Add( columnThreeSizer, 0, wx.wxLEFT, 5 )
+	mainSizer:AddSpacer(20)
+	columnOneSizer:Add( sectionSizers[k.SECTION_ATC], 0, wx.wxTOP, 5 )
+	columnTwoSizer:Add( sectionSizers[k.SECTION_TOOL_MEASURE], 0, wx.wxTOP, 5 )
+	columnThreeSizer:Add( sectionSizers[k.SECTION_TOOL_RECOGNITION], 0, wx.wxTOP, 5 )
+	columnThreeSizer:AddSpacer(10)
+	columnThreeSizer:Add( sectionSizers[k.SECTION_COVER], 0, wx.wxTOP, 5 )
+	
 	
 	settings = rcSettings.GetUISettingsList( )
 	
@@ -349,8 +387,8 @@ function main( )
 		local s = AddUIControlandSizer[GetControlType[setting.settingType]( )] ( id, setting )
 		
 		CreateUISetting( id, setting )
-		
-		mainSizer:Add( s, 0, wx.wxCENTER, 5 )
+
+		sectionSizers[setting.section]:Add( s, 0, wx.wxCENTER, 5 )
 		
 	    ::continue::
 	end
@@ -360,7 +398,7 @@ function main( )
 	
 	mainSizer:Fit( panel )
 	
-	frame:SetMinSize( wx.wxSize( 300, 750 ) )
+	frame:SetMinSize( wx.wxSize( 1000, 600 ) )
 	frame:Show( )
 	
 end
