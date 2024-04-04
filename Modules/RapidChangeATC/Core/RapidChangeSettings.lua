@@ -147,6 +147,26 @@ end
 
 local definitionMap = buildDefinitionMap()
 
+function RapidChangeSettings.GetRequiredDataType( settingType)
+	
+	local ValueType = {
+		[k.DISTANCE_SETTING] 	= function ( ) return "float" end,
+		[k.UDISTANCE_SETTING] 	= function ( ) return "float" end,
+		[k.FEED_SETTING] 		= function ( ) return "float" end,
+		[k.RPM_SETTING] 		= function ( ) return "float" end,
+		[k.MCODE_SETTING] 		= function ( ) return "integer" end,
+		[k.OPTION_SETTING] 		= function ( ) return "integer" end,
+		[k.SWITCH_SETTING] 		= function ( ) return "integer" end,
+		[k.COUNT_SETTING] 		= function ( ) return "integer" end,
+		-- [k.PORT_SETTING] 	= function ( ) return "integer" end,
+		-- [k.PIN_SETTING] 		= function ( ) return "integer" end,
+		[k.DWELL_SETTING] 		= function ( ) return "float" end,
+	}	
+	
+	return ValueType [ settingType ] ( )
+	
+end
+
 --Retrieve a setting's value
 function RapidChangeSettings.GetValue(key)
   local definition = definitionMap[key]
