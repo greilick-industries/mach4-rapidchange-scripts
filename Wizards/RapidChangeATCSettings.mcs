@@ -1,0 +1,366 @@
+local inst = mc.mcGetInstance( )
+
+machDir = mc.mcCntlGetMachDir( inst )
+package.path = machDir .. "\\Modules\\RapidChangeATC\\Core\\?.lua;" .. machDir .. "\\Modules\\RapidChangeATC\\Core\\?.mcc"
+
+if package.loaded.RapidChangeConstants == nil then rcConstants = require "RapidChangeConstants" end
+if package.loaded.RapidChangeLogger == nil then rcLog = require "RapidChangeLogger" end
+if package.loaded.RapidChangeErrorHandler == nil then rcErrors = require "RapidChangeErrorHandler" end
+if package.loaded.RapidChangeSettings == nil then rcSettings = require "RapidChangeSettings" end
+if package.loaded.RapidChangeController == nil then rcCntl = require "RapidChangeController" end
+if package.loaded.RapidChangeSubroutines == nil then rcSub = require "RapidChangeSubroutines" end
+
+local k = rcConstants
+
+function GetNextID( )
+    m_id = m_id+1
+    return m_id
+end
+--global var to hold the frame
+frame = nil
+panel = nil
+m_id = 0
+m_iniName = "RapidChangeATC"
+
+settings = nil
+storedSettings = {}
+
+function CreateUISetting( id, setting )
+	storedSettings[id] = setting
+end
+
+local GetFloatFromDataType = {
+	["nil"] = function ( value ) 
+		return 0.0
+	end,
+	["boolean"] = function ( value ) 
+		if tostring( value ) == nil then
+			return 0.0
+		else
+			if value == true then value = 1.0 elseif value == false then value = 0.0 end
+			return value
+		end
+	end,
+	["string"] = function ( value ) 
+		if tonumber( value ) == nil then
+			return 0.0
+		else
+			return tonumber(value)
+		end
+	end,
+	["number"] = function ( value ) 
+		return value
+	end
+}
+
+local GetStringFromDataType = {
+	["nil"] = function ( value ) 
+		return ""
+	end,
+	["boolean"] = function ( value ) 
+		if tostring( value ) == nil then
+			return GetStringFromDataType[ "nil"] ( value )
+		else
+			if value == true then value = "true" elseif value == false then value = "false" end
+			return value
+		end
+	end,
+	["string"] = function ( value ) 
+		return value
+	end,
+	["number"] = function ( value ) 
+		if tostring( value ) == nil then
+			return GetStringFromDataType[ "nil"] ( value )
+		else
+			return tostring(value)
+		end
+	end
+}
+
+local GetIntFromDataType = {
+	["nil"] = function ( value ) 
+		return 0
+	end,
+	["boolean"] = function ( value ) 
+		if tostring( value ) == nil then
+			return 0
+		else
+			if value == true then value = 1 elseif value == false then value = 0 end
+			return value
+		end
+	end,
+	["string"] = function ( value ) 
+		if math.tointeger( value ) == nil then
+			return 0
+		else
+			return math.tointeger(value)
+		end
+	end,
+	["number"] = function ( value ) 
+		if math.tointeger( value ) == nil then
+			return 0
+		else
+			return math.tointeger(value)
+		end
+	end
+}
+
+function OnUpdateUISetting( id, value )
+	
+	local I = "%i"
+	local F4 = "%.4f"
+	local S = "%s"
+	local s = "id: %i, value: " 
+	
+	local requiredDataType = rcSettings.GetRequiredDataType(storedSettings[id].settingType)
+	
+	if requiredDataType == "float" then 
+		storedSettings[id].value = GetFloatFromDataType[ type(value)] (value)
+		s = s .. F4
+	elseif requiredDataType == "integer" then 
+		storedSettings[id].value = GetIntFromDataType[ type(value)] (value)
+		s = s .. I
+	elseif requiredDataType == "string" then 
+		storedSettings[id].value = GetStringFromDataType[ type(value)] (value)	
+		s = s .. S
+	end
+	
+	s = string.format( s .. " type: %s", id, storedSettings[id].value,  storedSettings[id].settingType)
+	frame:SetStatusText( s, 0 )
+	
+end
+
+function UISaveSettings( )
+	
+	frame:SetStatusText( "Saving...", 0 )
+	
+	for _, v in pairs( storedSettings ) do
+		rcSettings.SetValue( v.key, v.value )
+	end
+
+	mc.mcProfileFlush(inst)
+	rcSub.UpdateSettings( )
+	
+	frame:SetStatusText( "Settings Saved", 0 )
+	
+end
+
+function CreateOneColumnInput( txt, cntrl )
+	
+	-- txt might be used later
+	local s = wx.wxBoxSizer( wx.wxVERTICAL )
+	
+	s:Add( cntrl, 1, wx.wxCENTER, 5 )
+	
+	s:SetMinSize( 250, 30 ) -- force it to be some reasonable size
+	
+	return s
+	
+end
+
+function CreateTwoColumnInput( txt, cntrl )
+	
+	local s = wx.wxGridSizer( 0, 2, 5, 5 )
+	local t = wx.wxStaticText( panel, wx.wxID_ANY, tostring( txt ) )
+	
+	s:Add( t, 1, wx.wxCENTER, 5 )
+	s:Add( cntrl, 1, wx.wxCENTER, 5 )
+	
+	s:SetMinSize( 250, 30 ) -- force it to be some reasonable size
+	
+	return s
+	
+end
+
+AddUIControlandSizer = {
+	
+		[k.INPUT_CONTROL] = function( id, setting )
+			
+			local iCtrl = wx.wxTextCtrl( panel, id, tostring( setting.value ), wx.wxDefaultPosition, wx.wxSize( 125, 25 ), wx.wxTE_PROCESS_ENTER )
+			
+			local iSizer = CreateTwoColumnInput( setting.label, iCtrl )
+			
+			panel:Connect( id, wx.wxEVT_COMMAND_TEXT_UPDATED, 
+				function( event ) OnUpdateUISetting( event:GetId( ), iCtrl:GetValue( ) ) end )
+			 
+			return iSizer
+			
+		end, 
+		[k.CHECK_CONTROL] = function( id, setting )
+			
+			local iCtrl = wx.wxCheckBox( panel, id, setting.label, wx.wxDefaultPosition, wx.wxDefaultSize )
+			iCtrl:SetValue( setting.value )
+			
+			local iSizer = CreateOneColumnInput( setting.label, iCtrl )
+			
+			panel:Connect( id, wx.wxEVT_COMMAND_CHECKBOX_CLICKED, 
+				function( event ) OnUpdateUISetting( event:GetId( ), iCtrl:GetValue( ) ) end )
+			
+			return iSizer
+			
+		end, 
+		[k.RADIO_CONTROL] = function( id, setting )
+			
+			local iCtrl = wx.wxRadioBox( panel, id, setting.label, wx.wxDefaultPosition, wx.wxDefaultSize )
+			iCtrl:SetValue( setting.value )
+			
+			local iSizer = CreateOneColumnInput( setting.label, iCtrl )
+			
+			panel:Connect( id, wx.wxEVT_COMMAND_RADIOBOX_SELECTED, 
+				function( event ) OnUpdateUISetting( event:GetId( ), iCtrl:isChecked( ) ) end )
+			
+			return iSizer
+		end, 
+		[k.SELECT_CONTROL] = function( id, setting )
+			
+			return AddUIControl[k.CHOICE_CONTROL] ( id, setting )
+			
+		end, 
+		[k.LISTBOX_CONTROL] = function( setting )
+			
+			local iCtrl = wx.wxListBox( panel, id, wx.wxDefaultPosition, wx.wxSize( 125, #setting.optionLabels*25 ), setting.optionLabels )
+			iCtrl:SetSelection( setting.value )
+			
+			local iSizer = CreateTwoColumnInput( setting.label, iCtrl )
+			
+			panel:Connect( id, wx.wxEVT_COMMAND_LISTBOX_SELECTED, 
+				function( event ) OnUpdateUISetting( event:GetId( ), iCtrl:GetSelection( ) ) end )
+			
+			return iSizer
+		end, 
+		[k.CHOICE_CONTROL] = function( id, setting )
+			local iCtrl = wx.wxChoice( panel, id, wx.wxDefaultPosition, wx.wxSize( 125, 25 ), setting.optionLabels )
+			iCtrl:SetSelection( setting.value )
+			
+			local iSizer = CreateTwoColumnInput( setting.label, iCtrl )
+			
+			panel:Connect( id, wx.wxEVT_COMMAND_CHOICE_SELECTED, 
+				function( event ) OnUpdateUISetting( event:GetId( ), iCtrl:GetSelection( ) ) end )
+			
+			return iSizer
+		end, 
+		[k.SPIN_CONTROL] = function( id, setting )
+			
+			local iCtrl = wx.wxSpinCtrl( panel, id, setting.label, wx.wxDefaultPosition, wx.wxSize( 125, 25 ) )
+			iCtrl:SetRange( 0, 12 )
+			iCtrl:SetValue( setting.value )
+			
+			local iSizer = CreateTwoColumnInput( setting.label, iCtrl ) 
+			
+			panel:Connect( id, wx.wxEVT_COMMAND_SPINCTRL_UPDATED, 
+				function( event ) OnUpdateUISetting( event:GetId( ), iCtrl:GetValue( ) ) end )
+			
+			return iSizer
+			
+		end
+}
+
+GetControlType = {
+	
+	[k.DISTANCE_SETTING] = function ( ) return k.INPUT_CONTROL end, 
+	[k.UDISTANCE_SETTING] = function ( ) return k.INPUT_CONTROL end, 
+	[k.FEED_SETTING] = function ( ) return k.INPUT_CONTROL end, 
+	[k.RPM_SETTING] = function ( ) return k.INPUT_CONTROL end, 
+	[k.MCODE_SETTING] = function ( ) return k.INPUT_CONTROL end, 
+	[k.OPTION_SETTING] = function ( ) return k.CHOICE_CONTROL end, 
+	[k.SWITCH_SETTING] = function ( ) return k.CHECK_CONTROL end, 
+	[k.COUNT_SETTING] = function ( ) return k.SPIN_CONTROL end, 
+	--[k.PORT_SETTING] = function ( ) return k.INPUT_CONTROL end, 
+	--[k.PIN_SETTING] = function ( ) return k.INPUT_CONTROL end, 
+	[k.DWELL_SETTING] = function ( ) return k.INPUT_CONTROL end
+
+}
+
+function main( )
+	
+	frame = wx.wxFrame( wx.NULL, wx.wxID_ANY,  m_iniName .. " Settings Wizard" )
+	frame:Connect( wx.wxEVT_CLOSE_WINDOW, 
+		function( event ) event:Skip( ) end )
+	
+	local fileMenu = wx.wxMenu( )
+	ID_SAVE = GetNextID( )
+	fileMenu:Append( ID_SAVE, "&Save", "Save settings" )
+	fileMenu:AppendSeparator( )
+	
+	ID_SAVE_EXIT = GetNextID( )
+    fileMenu:Append( ID_SAVE_EXIT, "Save and exit", "Save settings and exit" )
+    fileMenu:AppendSeparator( )
+    
+	fileMenu:Append( wx.wxID_EXIT, "E&xit", "Quit without saving" )
+
+    local helpMenu = wx.wxMenu( )
+    helpMenu:Append( wx.wxID_ABOUT, "&About", "About RapidChange ATC Settings Wizard" )
+
+    local menuBar = wx.wxMenuBar( )
+    menuBar:Append( fileMenu, "&File" )
+    menuBar:Append( helpMenu, "&Help" )
+    frame:SetMenuBar( menuBar )
+
+    frame:CreateStatusBar( 1 )
+    frame:SetStatusText( "RapidChangeATC Settings Wizard", 0 )
+	
+    frame:Connect( ID_SAVE, wx.wxEVT_COMMAND_MENU_SELECTED, 
+		function ( event ) 
+			UISaveSettings( )
+		end
+	 )
+	
+	frame:Connect( ID_SAVE_EXIT, wx.wxEVT_COMMAND_MENU_SELECTED, 
+		function ( event ) 
+			UISaveSettings( )
+			frame:Close( true )
+		end
+	 )
+
+    frame:Connect( wx.wxID_EXIT, wx.wxEVT_COMMAND_MENU_SELECTED, 
+		function ( event )
+			--rcSettings.UnregisterUIControls( )
+			frame:Close( true )
+		end
+	 )
+
+    -- connect the selection event of the about menu item
+    frame:Connect( wx.wxID_ABOUT, wx.wxEVT_COMMAND_MENU_SELECTED, 
+        function ( event )
+            wx.wxMessageBox( 'Single column version of RapidChange ATC Settings Wizard\n'  ..
+                            'Be careful as there is no data validation if you enter incorrect values.', 
+                            "About RapidChange ATC Settings Wizard", 
+                            wx.wxOK + wx.wxICON_INFORMATION, 
+                            frame )
+        end
+	 )
+	
+	panel = wx.wxScrolledWindow( frame, wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxHSCROLL + wx.wxVSCROLL )
+	panel:SetScrollRate( 5, 5 )
+	
+	sizer = wx.wxBoxSizer( wx.wxVERTICAL )
+	
+	settings = rcSettings.GetUISettingsList( )
+	
+	for i=1, #settings do
+		
+		local setting = settings[i] 
+		 
+		local id = GetNextID( )
+		
+		local s = AddUIControlandSizer[GetControlType[setting.settingType]( )] ( id, setting )
+		
+		CreateUISetting( id, setting )
+		
+		sizer:Add( s, 0, wx.wxCENTER, 5 )
+		
+	end
+	
+	panel:SetSizer( sizer )
+	panel:Layout( )
+	
+	sizer:Fit( panel )
+	
+	frame:SetMinSize( wx.wxSize( 300, 750 ) )
+	frame:Show( )
+	
+end
+
+main( )
+
+wx.wxGetApp( ):MainLoop( )
