@@ -161,6 +161,7 @@ function RapidChangeController.SetTLO(tool, masterTool, refPos)
 	else -- we have the master tool in master tool mode, the offset is 0
 		-- we need to update the internal reference
 		rcSettings.SetValue(k.MASTER_TOOL_REF_POS, triggerPos)
+		rcSettings.SetValue(k.MASTER_TOOL_REF_POS_SET, k.TRUE)
 	end
 
 	-- Record the appropriate offset in the tool table

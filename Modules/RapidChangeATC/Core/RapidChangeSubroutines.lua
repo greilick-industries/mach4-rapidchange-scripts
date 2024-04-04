@@ -540,19 +540,34 @@ function RapidChangeSubroutines.UnloadToolZero()
 end
 
 function RapidChangeSubroutines.Validate_CoverControl()
-  --Do nothing
+  RapidChangeSubroutines.UpdateSettings()
+  -- Do nothing
 end
 
 function RapidChangeSubroutines.Validate_m6()
+  RapidChangeSubroutines.UpdateSettings()
+  local result = 1
   getMachToolNumbers()
+  if ( ( touchOffEnabled == k.ENABLED and useMasterTool == k.ENABLED ) and ( masterTool == 0 or rcSettings.GetValue(k.MASTER_TOOL_REF_POS_SET) == k.FALSE )) then
+    local message = ("Master tool reference has not been recorded. Tool change aborted.")
+    rcCntl.ShowBox(message, true)
+    result = 0
+  end
   if currentTool == selectedTool then
     local message = string.format("Tool %i loaded. Tool change bypassed.", selectedTool)
-    rcCntl.Terminate(message)
+    rcCntl.ShowStatus(message)
+    result = 0
   end
+  return result
 end
 
 function RapidChangeSubroutines.Validate_ToolTouchOff()
+  RapidChangeSubroutines.UpdateSettings()
   getMachToolNumbers()
+  if ( useMasterTool == k.ENABLED and ( masterTool == 0 or rcSettings.GetValue(k.MASTER_TOOL_REF_POS_SET) == k.FALSE )) then
+    local message = ("Master tool reference has not been recorded. Tool measurement aborted.")
+    rcCntl.ShowBox(message, true)
+  end
   if currentTool == 0 then
     rcCntl.Terminate("Tool touch off aborted. No current tool.")
   end

@@ -1,6 +1,11 @@
 function m6()
   -- rcSub.Validate_HomeXYZ()
-  rcSub.Validate_m6()
+  local runToolChange = rcSub.Validate_m6()
+
+  if (runToolChange == 0) then
+    do return end
+  end
+
   rcSub.Setup_m6()
   rcSub.UnloadTool()
   rcSub.LoadTool()

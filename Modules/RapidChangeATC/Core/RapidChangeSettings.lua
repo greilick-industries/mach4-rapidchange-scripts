@@ -64,6 +64,7 @@ local definitions = {
 
   --Internal use only
   createDefinition(k.MASTER_TOOL_REF_POS, k.SECTION_INTERNAL, "Master Tool Ref Pos", "Last triggered machine pos when probing the master tool.", k.INTERNAL_SETTING),
+  createDefinition(k.MASTER_TOOL_REF_POS_SET, k.SECTION_INTERNAL, "Master Tool Ref Pos Set", "Indicates whether the master tool reference position has been set", k.INTERNAL_SETTING),
 
   --Tool Recognition
   createDefinition(k.TOOL_REC_ENABLED, k.SECTION_TOOL_RECOGNITION, "Tool Recognition Enabled", "Enable infrared tool recognition.", k.SWITCH_SETTING),

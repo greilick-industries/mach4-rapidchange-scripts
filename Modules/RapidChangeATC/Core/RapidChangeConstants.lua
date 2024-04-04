@@ -164,6 +164,7 @@ RapidChangeConstants.SET_FEED_RATE = "SetFeedRate"
 
 --Internal Reference
 RapidChangeConstants.MASTER_TOOL_REF_POS = "MasterToolRefPos"
+RapidChangeConstants.MASTER_TOOL_REF_POS_SET = "MasterToolRefPosSet"
 
 --Tool recognition
 RapidChangeConstants.TOOL_REC_ENABLED = "ToolRecognitionEnabled"
