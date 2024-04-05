@@ -41,6 +41,7 @@ local definitions = {
   createDefinition(k.X_MANUAL, k.SECTION_ATC, "X Manual", "X Position (Machine Coordinates) for manual tool changes.", k.DISTANCE_SETTING),
   createDefinition(k.Y_MANUAL, k.SECTION_ATC, "Y Manual", "Y Position (Machine Coordinates) for manual tool changes.", k.DISTANCE_SETTING),
   createDefinition(k.Z_ENGAGE, k.SECTION_ATC, "Z Engage", "Z Position (Machine Coordinates) for full engagement with the clamping nut.", k.DISTANCE_SETTING),
+  createDefinition(k.Z_START_LOAD, k.SECTION_ATC, "Z Start Load", "Z Position (Machine Coordinates) where the load process should start the spindle.", k.DISTANCE_SETTING),
   createDefinition(k.Z_MOVE_TO_LOAD, k.SECTION_ATC, "Z Move To Load", "Z Position to rise to after unloading a tool, before moving to the pocket for loading.", k.DISTANCE_SETTING),
   createDefinition(k.Z_MOVE_TO_PROBE, k.SECTION_ATC, "Z Move To Probe", "Z Position to rise to after loading a tool, before moving to the tool setter for probing.", k.DISTANCE_SETTING),
   createDefinition(k.Z_SAFE_CLEARANCE, k.SECTION_ATC, "Z Safe Clearance", "Z Position for the safe clearance of all obstacles.", k.DISTANCE_SETTING),

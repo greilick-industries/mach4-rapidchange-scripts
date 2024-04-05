@@ -261,7 +261,7 @@ AddUIControlandSizer = {
 		[k.SPIN_CONTROL] = function( id, setting )
 			
 			local iCtrl = wx.wxSpinCtrl( panel, id, setting.label, wx.wxDefaultPosition, wx.wxSize( 125, 25 ) )
-			iCtrl:SetRange( 0, 12 )
+			iCtrl:SetRange( 0, 10000 )
 			iCtrl:SetValue( setting.value )
 			
 			local iSizer = CreateTwoColumnInput( setting.label, iCtrl ) 
@@ -283,7 +283,7 @@ GetControlType = {
 	[k.UDISTANCE_SETTING] = function ( ) return k.INPUT_CONTROL end, 
 	[k.FEED_SETTING] = function ( ) return k.INPUT_CONTROL end, 
 	[k.RPM_SETTING] = function ( ) return k.INPUT_CONTROL end, 
-	[k.MCODE_SETTING] = function ( ) return k.INPUT_CONTROL end, 
+	[k.MCODE_SETTING] = function ( ) return k.SPIN_CONTROL end, 
 	[k.OPTION_SETTING] = function ( ) return k.CHOICE_CONTROL end, 
 	[k.SWITCH_SETTING] = function ( ) return k.CHECK_CONTROL end, 
 	[k.COUNT_SETTING] = function ( ) return k.SPIN_CONTROL end, 
@@ -380,6 +380,7 @@ function main( )
 	
 	mainSizer:AddSpacer( 10 )
 	mainSizer:Add( settingsRowSizer, 0, wx.wxLEFT, 5 )
+	mainSizer:AddSpacer( 10 )
 	mainSizer:Add( buttonsRowSizer, 0, wx.wxLEFT, 5 )
 	settingsRowSizer:AddSpacer( 20 )
 	settingsRowSizer:Add( columnOneSizer, 0, wx.wxLEFT, 5 )
@@ -392,7 +393,7 @@ function main( )
 	columnThreeSizer:Add( sectionSizers[k.SECTION_TOOL_RECOGNITION], 0, wx.wxTOP, 5 )
 	columnThreeSizer:AddSpacer(10)
 	columnThreeSizer:Add( sectionSizers[k.SECTION_COVER], 0, wx.wxTOP, 5 )
-	buttonsRowSizer:AddSpacer( 20 )
+	buttonsRowSizer:AddSpacer( 327 )
 	buttonsRowSizer:Add( saveBtn, 0, wx.wxLEFT, 5)
 	buttonsRowSizer:AddSpacer( 20 )
 	buttonsRowSizer:Add( saveExitBtn, 0, wx.wxLEFT, 5)
@@ -422,7 +423,7 @@ function main( )
 	
 	mainSizer:Fit( panel )
 	
-	frame:SetMinSize( wx.wxSize( 1000, 660 ) )
+	frame:SetMinSize( wx.wxSize( 976, 670 ) )
 	frame:Show( )
 	
 end

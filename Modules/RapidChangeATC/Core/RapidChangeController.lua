@@ -250,6 +250,10 @@ function RapidChangeController.LinearIncremental_Z(zDist, feed)
 	executeLines(LINEAR_INCREMENTAL, z(zDist), f(feed))
 end
 
+function RapidChangeController.LinearToMachCoord_Z(zPos, feed)
+	executeLines(line(LINEAR_TO_MACH, z(zPos), f(feed)))
+end
+
 function RapidChangeController.LinearToMachCoords_Z_Z(zPos1, zPos2, feed)
 	executeLines(
 		line(LINEAR_TO_MACH, z(zPos1), f(feed)),
@@ -288,6 +292,16 @@ function RapidChangeController.ShowBox(message, terminate)
 
 	if terminate == true then
 		error(message)
+	end
+end
+
+function RapidChangeController.ShowBoxWithAbort(message)
+	local result = wx.wxMessageBox(message, "RapidChange ATC", wx.wxOK | wx.wxCANCEL)
+
+	if ( result ~= wx.wxOK ) then
+		RapidChangeController.ShowStatus("Operation aborted.")
+		wx.wxMilliSleep(200)
+		error(message .. " User abort.")
 	end
 end
 
