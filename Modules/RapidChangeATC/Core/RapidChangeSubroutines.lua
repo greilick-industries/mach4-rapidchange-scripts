@@ -242,8 +242,8 @@ function RapidChangeSubroutines.ConfirmLoad_User()
   rcCntl.SpinStop()
   rcCntl.RapidToMachCoord_Z(zMoveToProbe)
 
-  local message = string.format("Confirm tool %i has properly loaded and press \"OK\" to resume ATC.", selectedTool)
-  rcCntl.ShowBox(message)
+  local message = string.format("Confirm tool %i has properly loaded and press \"OK\" to resume ATC operations.\nPress \"Cancel\" to abort.", selectedTool)
+  rcCntl.ShowBoxWithAbort(message)
 
   rcCntl.SetCurrentTool(selectedTool)
   currentTool = selectedTool
@@ -289,8 +289,8 @@ function RapidChangeSubroutines.ConfirmUnload_User()
   rcCntl.SpinStop()
   rcCntl.RapidToMachCoord_Z(zMoveToLoad)
 
-  local message = string.format("Confirm tool %i has properly unloaded and press \"OK\" to resume ATC.", currentTool)
-  rcCntl.ShowBox(message)
+  local message = string.format("Confirm tool %i has properly unloaded and press \"OK\" to resume ATC operations.\nPress \"Cancel\" to abort.", currentTool)
+  rcCntl.ShowBoxWithAbort(message)
 
   rcCntl.SetCurrentTool(0)
   currentTool = 0
@@ -421,8 +421,8 @@ end
 function RapidChangeSubroutines.LoadToolManual()
   rcCntl.RapidToMachCoords_Z_XY_Z(zSafeClearance, xManual, yManual, zSafeClearance)
 
-  local message = string.format("Tool %i is out of range.\n\nManually load tool %i and press \"OK\" to resume ATC operations.\n\n", selectedTool, selectedTool)
-  rcCntl.ShowBox(message)
+  local message = string.format("Tool %i is out of range.\n\nManually load tool %i and press \"OK\" to resume ATC operations.\nPress \"Cancel\" to abort.", selectedTool, selectedTool)
+  rcCntl.ShowBoxWithAbort(message)
   rcCntl.SetCurrentTool(selectedTool)
   currentTool = selectedTool
 end
@@ -533,8 +533,8 @@ end
 function RapidChangeSubroutines.UnloadToolManual()
   rcCntl.RapidToMachCoords_Z_XY_Z(zSafeClearance, xManual, yManual, zSafeClearance)
 
-  local message = string.format("Tool %i is out of range.\n\nManually unload tool %i and press \"OK\" to resume ATC operations.\n\n", currentTool, currentTool)
-  rcCntl.ShowBox(message)
+  local message = string.format("Tool %i is out of range.\n\nManually unload tool %i and press \"OK\" to resume ATC operations.\nPress \"Cancel\" to abort.", currentTool, currentTool)
+  rcCntl.ShowBoxWithAbort(message)
   rcCntl.SetCurrentTool(0)
   currentTool = 0
 end

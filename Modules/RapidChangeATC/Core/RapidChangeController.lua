@@ -125,6 +125,11 @@ local function getProbeMachPosZ()
 end
 
 --Public controller functions
+function RapidChangeController.Disable()
+	local rc = mc.mcCntlEnable(inst, k.DISABLED)
+	rcErrors.GuardAPIError(rc)
+end
+
 function RapidChangeController.GetCurrentTool()
 	local tool, rc = mc.mcToolGetCurrent(inst)
 	rcErrors.GuardAPIError(rc)
@@ -291,7 +296,7 @@ function RapidChangeController.ShowBox(message, terminate)
 	wx.wxMessageBox(message, "RapidChange ATC")
 
 	if terminate == true then
-		error(message)
+		RapidChangeController.Terminate(message)
 	end
 end
 
@@ -299,9 +304,7 @@ function RapidChangeController.ShowBoxWithAbort(message)
 	local result = wx.wxMessageBox(message, "RapidChange ATC", wx.wxOK | wx.wxCANCEL)
 
 	if ( result ~= wx.wxOK ) then
-		RapidChangeController.ShowStatus("Operation aborted.")
-		wx.wxMilliSleep(200)
-		error(message .. " User abort.")
+		RapidChangeController.Terminate("User abort.")
 	end
 end
 
@@ -314,8 +317,8 @@ function RapidChangeController.Terminate(message)
 	if tostring(message) == nil then
 		message = "Script terminated without message"
 	end
-
 	RapidChangeController.ShowStatus(message)
+	wx.wxMilliSleep(200)
 	error(message)
 end
 
